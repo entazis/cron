@@ -22,6 +22,60 @@
       --accent: #8b5cf6;
     }
 
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --error: #dc2626;
+      --accent: #7c3aed;
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      z-index: 1000;
+    }
+    
+    .theme-toggle button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border: none;
+      background: transparent;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      color: var(--text-muted);
+    }
+    
+    .theme-toggle button:hover {
+      background: var(--surface-hover);
+    }
+    
+    .theme-toggle button.active {
+      background: var(--primary);
+      color: white;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -383,6 +437,11 @@
   </style>
 </head>
 <body>
+  <div class="theme-toggle">
+    <button data-theme="light" title="Light">☀️</button>
+    <button data-theme="dark" title="Dark">🌙</button>
+    <button data-theme="system" title="System" class="active">💻</button>
+  </div>
   <div class="container">
     <header>
       <h1>⏰ Cron Expression Builder</h1>
@@ -933,6 +992,42 @@
         }]
       })
     }).catch(() => {});
+
+    // Theme management
+    (function() {
+      const themeButtons = document.querySelectorAll('.theme-toggle button');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      function getSystemTheme() {
+        return prefersDark.matches ? 'dark' : 'light';
+      }
+      
+      function applyTheme(theme) {
+        const effectiveTheme = theme === 'system' ? getSystemTheme() : theme;
+        document.documentElement.setAttribute('data-theme', effectiveTheme);
+      }
+      
+      function setTheme(theme) {
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+        themeButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+      }
+      
+      const savedTheme = localStorage.getItem('theme') || 'system';
+      setTheme(savedTheme);
+      
+      themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+      });
+      
+      prefersDark.addEventListener('change', () => {
+        if (localStorage.getItem('theme') === 'system') {
+          applyTheme('system');
+        }
+      });
+    })();
   </script>
 </body>
 </html>
